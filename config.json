@@ -1,0 +1,19 @@
+{
+    "project_name":"cbs",
+    "outdir":{
+        "obj":"./build/obj",
+        "bin":"./build/bin"
+    },
+    "src":{
+        "program":{
+            "main":"./src/main.cpp",
+            "dependencies":[],
+            "optimization":0
+        },
+        "test":{
+            "main":"./test/test.cpp",
+            "dependencies":[],
+            "optimization":0
+        }
+    }
+}

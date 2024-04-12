@@ -1,0 +1,24 @@
+{
+    "project_name":"json-parser",
+    "outdir":{
+        "obj":"./build/obj",
+        "bin":"./build/bin"
+    },
+    "src":{
+        "location":"./src",
+        "program":{
+            "main":"./src/main.cpp",
+            "dependencies":[],
+            "optimization":0
+        },
+        
+        "test":{
+            "main":"./test/test.cpp",
+            "dependencies":[
+                {"abc":12},
+                {"abc":11}
+            ],
+            "optimization":0
+        }
+    }
+}
