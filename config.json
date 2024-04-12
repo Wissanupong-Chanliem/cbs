@@ -7,13 +7,14 @@
     "src":{
         "program":{
             "main":"./src/main.cpp",
-            "dependencies":[],
+            "dependencies":[""],
             "optimization":0
         },
         "test":{
             "main":"./test/test.cpp",
             "dependencies":[],
             "optimization":0
-        }
+        },
+        "source_code":[]
     }
 }

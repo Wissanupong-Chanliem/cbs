@@ -5,19 +5,28 @@
         "bin":"./build/bin"
     },
     "src":{
-        "location":"./src",
-        "program":{
-            "main":"./src/main.cpp",
+        "main":{
+            "name":"Program",
+            "path":"./src/main.cpp",
+            "dependencies":["json"],
+            "optimization":0
+        },
+        "test":{
+            "name":"Test",
+            "path":"./test/test.cpp",
             "dependencies":[],
             "optimization":0
         },
-        
-        "test":{
-            "main":"./test/test.cpp",
-            "dependencies":[
-                {"abc":12},
-                {"abc":11}
-            ],
+        "tokenizer":{
+            "name":"Test",
+            "path":"./src/modules/tokenizer/tokenizer.cpp",
+            "dependencies":[],
+            "optimization":0
+        },
+        "json":{
+            "name":"Test",
+            "path":"./src/modules/json.cpp",
+            "dependencies":["tokenizer"],
             "optimization":0
         }
     }

@@ -76,6 +76,7 @@ std::pair<std::string,JSON*> JSON::jsonParser::parseField(){
 }
 
 JSON* JSON::jsonParser::parseLiteral(){
+    JSON* new_node = nullptr;
     switch(this->look_ahead.type){
         case OPEN_BRACE:{
             return create_JSON(this->parseObject());
@@ -94,23 +95,23 @@ JSON* JSON::jsonParser::parseLiteral(){
             return create_JSON(values);
         }
         case FLOAT:
-            JSON* new_node = create_JSON(std::get<float>(this->look_ahead.val));
+            new_node = create_JSON(std::get<float>(this->look_ahead.val));
             this->eat(FLOAT);
             return new_node;
         case DOUBLE:
-            JSON* new_node = create_JSON(std::get<double>(this->look_ahead.val));
+            new_node = create_JSON(std::get<double>(this->look_ahead.val));
             this->eat(DOUBLE);
             return new_node;
         case INT:
-            JSON* new_node = create_JSON(std::get<int>(this->look_ahead.val));
+            new_node = create_JSON(std::get<int>(this->look_ahead.val));
             this->eat(INT);
             return new_node;
         case LONG:
-            JSON* new_node = create_JSON(std::get<long long>(this->look_ahead.val));
+            new_node = create_JSON(std::get<long long>(this->look_ahead.val));
             this->eat(LONG);
             return new_node;
         default:
-            JSON* new_node = create_JSON(std::get<std::string>(this->look_ahead.val));
+            new_node = create_JSON(std::get<std::string>(this->look_ahead.val));
             this->eat(STRING_LITERAL);
             return new_node;
     }
@@ -311,16 +312,24 @@ template std::string JSON::get<std::string>();
 template std::vector<JSON*> JSON::get<std::vector<JSON*>>();
 template std::unordered_map<std::string, JSON*> JSON::get<std::unordered_map<std::string, JSON*>>();
 
-JSON JSON::operator[](std::string key){
+JSON& JSON::operator[](std::string key){
     if (std::holds_alternative<std::unordered_map<std::string, JSON*>>(this->val)){
-        return *((std::get<std::unordered_map<std::string, JSON*>>(this->val))[key]);
+        auto map = std::get<std::unordered_map<std::string, JSON*>>(this->val);
+        if(map.count(key)>0){
+            return *((std::get<std::unordered_map<std::string, JSON*>>(this->val))[key]);
+        }
+        throw std::runtime_error("error: object does not contains key \""+key+"\".");
     }
     
     throw std::runtime_error("error: use of key on non-object type value.");
 }
-JSON JSON::operator[](uint32_t index){
+JSON& JSON::operator[](uint32_t index){
     if (std::holds_alternative<std::vector<JSON*>>(this->val)){
-        return *((std::get<std::vector<JSON*>>(this->val))[index]);
+        auto vec = std::get<std::vector<JSON*>>(this->val);
+        if(index>=0&&index<vec.size()){
+            return *((std::get<std::vector<JSON*>>(this->val))[index]);
+        }
+        throw std::runtime_error("error: use of out of bound index.");
     }
     throw std::runtime_error("error: use of index on non-array type value.");
 }

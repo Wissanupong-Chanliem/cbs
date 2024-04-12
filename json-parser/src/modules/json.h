@@ -46,8 +46,8 @@ namespace json{
             template <typename T> T get();
             //Use to access field in object using key
             //Error when used on value that's not object (ex. number, string, array)
-            JSON operator[](std::string key);
-            JSON operator[](uint32_t index);
+            JSON& operator[](std::string key);
+            JSON& operator[](uint32_t index);
     };
     
 
