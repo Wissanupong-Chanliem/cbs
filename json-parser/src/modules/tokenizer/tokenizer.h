@@ -1,13 +1,10 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
-#include <cstring>
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 #include <variant>
 #include <unordered_map>
-#include <regex>
-
+#include <string>
 
 enum t_type{
     OPEN_BRACE,

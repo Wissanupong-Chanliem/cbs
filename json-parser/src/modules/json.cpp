@@ -2,7 +2,7 @@
 using namespace json;
 
 JSON::JSON(){
-    this->val="";
+    this->root=nullptr;
 }
 
 JSON::JSON(std::ifstream& json_file){
@@ -14,33 +14,53 @@ JSON::JSON(std::ifstream& json_file){
         }
     }
     jsonParser parser = jsonParser(json_string);
-    this->val = parser.parse();
+    this->root = parser.parse();
 }
 
 JSON::JSON(std::string json_string){
     jsonParser parser = jsonParser(json_string);
-    this->val = parser.parse();
+    this->root = parser.parse();
 }
 
-JSON* JSON::create_JSON(std::unordered_map<std::string,JSON*> val){
-    JSON* new_json = new JSON();
-    new_json->val= val;
-    return new_json;
-}
-JSON* JSON::create_JSON(std::string val){
-    JSON* new_json = new JSON();
-    new_json->val= val;
-    return new_json;
-}
-JSON* JSON::create_JSON(double val){
-    JSON* new_json = new JSON();
-    new_json->val= val;
+JSON::tree_node* JSON::jsonParser::create_Node(JSON::json_object val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
     return new_json;
 }
 
-JSON* JSON::create_JSON(std::vector<JSON*> val){
-    JSON* new_json = new JSON();
-    new_json->val= val;
+JSON::tree_node* JSON::jsonParser::create_Node(JSON::json_array val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
+    return new_json;
+}
+
+JSON::tree_node* JSON::jsonParser::create_Node(std::string val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
+    return new_json;
+}
+
+JSON::tree_node* JSON::jsonParser::create_Node(double val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
+    return new_json;
+}
+
+JSON::tree_node* JSON::jsonParser::create_Node(float val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
+    return new_json;
+}
+
+JSON::tree_node* JSON::jsonParser::create_Node(long long val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
+    return new_json;
+}
+
+JSON::tree_node* JSON::jsonParser::create_Node(int val){
+    tree_node* new_json = new tree_node();
+    new_json->val = val;
     return new_json;
 }
 
@@ -49,14 +69,14 @@ JSON::jsonParser::jsonParser(std::string json_string){
     this->tokenizer.add_json_string(json_string);
 }
 
-std::unordered_map<std::string,JSON*> JSON::jsonParser::parse(){
+JSON::tree_node* JSON::jsonParser::parse(){
     look_ahead = this->tokenizer.get_next_token();
-    return this->parseObject();
+    return create_Node(this->parseObject());
 }
 
-std::unordered_map<std::string,JSON*> JSON::jsonParser::parseObject(){
+JSON::json_object JSON::jsonParser::parseObject(){
     this->eat(OPEN_BRACE);
-    std::unordered_map<std::string,JSON*> fields;
+    JSON::json_object fields;
     while(this->look_ahead.type!=CLOSE_BRACE){
         fields.insert(this->parseField());
         if(this->look_ahead.type!=CLOSE_BRACE){
@@ -67,22 +87,22 @@ std::unordered_map<std::string,JSON*> JSON::jsonParser::parseObject(){
     return fields;
 }
 
-std::pair<std::string,JSON*> JSON::jsonParser::parseField(){
+std::pair<std::string,JSON::tree_node*> JSON::jsonParser::parseField(){
     
     token field_name = this->eat(STRING_LITERAL);
     this->eat(COLON);
-    JSON* value = this->parseLiteral();
+    tree_node* value = this->parseLiteral();
     return std::make_pair(std::get<std::string>(field_name.val),value);
 }
 
-JSON* JSON::jsonParser::parseLiteral(){
-    JSON* new_node = nullptr;
+JSON::tree_node* JSON::jsonParser::parseLiteral(){
+    JSON::tree_node* new_node = nullptr;
     switch(this->look_ahead.type){
         case OPEN_BRACE:{
-            return create_JSON(this->parseObject());
+            return create_Node(this->parseObject());
         }
         case OPEN_BRACKET:{
-            std::vector<JSON *> values;
+            JSON::json_array values;
             this->eat(OPEN_BRACKET);
             while (!this->tokenizer.reach_the_end() && this->look_ahead.type != CLOSE_BRACKET){
                 values.push_back(this->parseLiteral());
@@ -92,26 +112,26 @@ JSON* JSON::jsonParser::parseLiteral(){
                 }
             }
             this->eat(CLOSE_BRACKET);
-            return create_JSON(values);
+            return create_Node(values);
         }
         case FLOAT:
-            new_node = create_JSON(std::get<float>(this->look_ahead.val));
+            new_node = create_Node(std::get<float>(this->look_ahead.val));
             this->eat(FLOAT);
             return new_node;
         case DOUBLE:
-            new_node = create_JSON(std::get<double>(this->look_ahead.val));
+            new_node = create_Node(std::get<double>(this->look_ahead.val));
             this->eat(DOUBLE);
             return new_node;
         case INT:
-            new_node = create_JSON(std::get<int>(this->look_ahead.val));
+            new_node = create_Node(std::get<int>(this->look_ahead.val));
             this->eat(INT);
             return new_node;
         case LONG:
-            new_node = create_JSON(std::get<long long>(this->look_ahead.val));
+            new_node = create_Node(std::get<long long>(this->look_ahead.val));
             this->eat(LONG);
             return new_node;
         default:
-            new_node = create_JSON(std::get<std::string>(this->look_ahead.val));
+            new_node = create_Node(std::get<std::string>(this->look_ahead.val));
             this->eat(STRING_LITERAL);
             return new_node;
     }
@@ -130,23 +150,28 @@ token JSON::jsonParser::eat(t_type type){
 
 
 JSON::~JSON(){
-    if(std::holds_alternative<std::unordered_map<std::string, JSON*>>(this->val)){
-        std::unordered_map<std::string, JSON*> child_map = std::get<std::unordered_map<std::string, JSON*>>(this->val);
+    delete this->root;
+}
+
+JSON::tree_node::~tree_node(){
+    if(std::holds_alternative<JSON::json_object>(this->val)){
+        JSON::json_object child_map = std::get<JSON::json_object>(this->val);
         for (auto &it : child_map){
             delete it.second;
         }
     }
-    else if(std::holds_alternative<std::vector<JSON*>>(this->val)){
-        std::vector<JSON*> array = std::get<std::vector<JSON*>>(this->val);
-        for (int i=0;i<array.size();i++){
-            delete array[i];
+    else if(std::holds_alternative<JSON::json_array>(this->val)){
+        JSON::json_array Array = std::get<JSON::json_array>(this->val);
+        for (int i=0;i<Array.size();i++){
+            delete Array[i];
         }
     }
 }
-std::string JSON::to_string_helper(JSON* curr){
+
+std::string JSON::to_string_helper(tree_node* curr){
     std::string out = "";
-    if (std::holds_alternative<std::unordered_map<std::string, JSON*>>(curr->val)){
-        std::unordered_map<std::string, JSON*> child_map = std::get<std::unordered_map<std::string, JSON*>>(curr->val);
+    if (std::holds_alternative<JSON::json_object>(curr->val)){
+        JSON::json_object child_map = std::get<JSON::json_object>(curr->val);
         int counter = 0;
         out+="{";
         for (auto& it:child_map){
@@ -158,26 +183,32 @@ std::string JSON::to_string_helper(JSON* curr){
         }
         out+="}";
     }
-    else if (std::holds_alternative<std::vector<JSON*>>(curr->val)){
-        std::vector<JSON*> array = std::get<std::vector<JSON*>>(curr->val);
+    else if (std::holds_alternative<JSON::json_array>(curr->val)){
+        JSON::json_array Array = std::get<JSON::json_array>(curr->val);
         out+="[";
-        for (int i=0;i<array.size();i++){
-            out+=to_string_helper(array[i]);
-            if(i<array.size()-1){
+        for (int i=0;i<Array.size();i++){
+            out+=to_string_helper(Array[i]);
+            if(i<Array.size()-1){
                 out+=",";
             }
         }
         out+="]";
     }
+    else if (std::holds_alternative<float>(curr->val)){
+        float number = std::get<float>(curr->val);
+        out+=number;
+    }
     else if (std::holds_alternative<double>(curr->val)){
         double number = std::get<double>(curr->val);
-        double int_part;
-        if(std::modf(number,&int_part)!=0){
-            out+=number;
-        }
-        else{
-            out+=std::to_string((int) int_part);
-        }
+        out+=number;
+    }
+    else if (std::holds_alternative<int>(curr->val)){
+        int number = std::get<int>(curr->val);
+        out+=number;
+    }
+    else if (std::holds_alternative<long long>(curr->val)){
+        long long number = std::get<long long>(curr->val);
+        out+=std::to_string(number);
     }
     else if (std::holds_alternative<std::string>(curr->val)){
         out+="\""+std::get<std::string>(curr->val)+"\"";
@@ -186,11 +217,11 @@ std::string JSON::to_string_helper(JSON* curr){
 }
 
 std::string JSON::to_string(){
-    return to_string_helper(this);
+    return to_string_helper(this->root);
 }
 
 std::string JSON::to_stringf(){
-    std::string json_string = to_string_helper(this);
+    std::string json_string = to_string_helper(this->root);
     std::string fstring = "";
     int level = 0;
     bool in_array = false;
@@ -250,9 +281,7 @@ std::string JSON::to_stringf(){
 
 JSON JSON::from_str(std::string json_string){
     jsonParser parser = jsonParser(json_string);
-    JSON new_json = JSON();
-    new_json.val = parser.parse();
-    return new_json;
+    return JSON(json_string);
 }
 
 JSON JSON::open(std::filesystem::path json_file){
@@ -264,50 +293,429 @@ JSON JSON::open(std::filesystem::path json_file){
             json_string +=letter;
         }
     }
-    
-    jsonParser parser = jsonParser(json_string);
-    JSON new_json = JSON();
-    new_json.val = parser.parse();
-    return new_json;
+    return JSON(json_string);
 }
 
-template <typename T>
-T JSON::get(){
-    if(std::holds_alternative<T>(this->val)){
-        return std::get<T>(this->val);
-    }
-    const std::string type_map[4] = {
-        "Object",
-        "Array",
-        "String",
-        "Number"
-    };
-    throw std::runtime_error("Mismatched type: Field contain value of type "+type_map[this->val.index()]+" Not "+ typeid(T).name());
-}
-
-template double JSON::get<double>();
-template std::string JSON::get<std::string>();
-template std::vector<JSON*> JSON::get<std::vector<JSON*>>();
-template std::unordered_map<std::string, JSON*> JSON::get<std::unordered_map<std::string, JSON*>>();
-
-JSON& JSON::operator[](std::string key){
-    if (std::holds_alternative<std::unordered_map<std::string, JSON*>>(this->val)){
-        auto map = std::get<std::unordered_map<std::string, JSON*>>(this->val);
+JSON::jsonViewer JSON::operator[](std::string key){
+    if (std::holds_alternative<JSON::json_object>(this->root->val)){
+        auto map = std::get<JSON::json_object>(this->root->val);
         if(map.count(key)>0){
-            return *((std::get<std::unordered_map<std::string, JSON*>>(this->val))[key]);
+            return JSON::jsonViewer(map[key]);
         }
         throw std::runtime_error("error: object does not contains key \""+key+"\".");
     }
-    
     throw std::runtime_error("error: use of key on non-object type value.");
 }
-JSON& JSON::operator[](uint32_t index){
-    if (std::holds_alternative<std::vector<JSON*>>(this->val)){
-        auto vec = std::get<std::vector<JSON*>>(this->val);
+
+JSON::jsonViewer::jsonViewer(){
+    this->node=nullptr;
+}
+
+JSON::jsonViewer::jsonViewer(JSON::tree_node* view){
+    this->node=view;
+}
+
+template <typename T>
+T& JSON::jsonViewer::get(){
+    if(std::holds_alternative<T>(this->node->val)){
+        return std::get<T>(this->node->val);
+    }
+    const std::string type_map[7] = {
+        "Object",
+        "Array",
+        "String",
+        "Int",
+        "Long Long",
+        "Float",
+        "Double"
+    };
+    throw std::runtime_error("Mismatched type: Field contain value of type "+type_map[this->node->val.index()]+" Not "+ typeid(T).name());
+}
+template int& JSON::jsonViewer::get<int>();
+template long long& JSON::jsonViewer::get<long long>();
+template float& JSON::jsonViewer::get<float>();
+template double& JSON::jsonViewer::get<double>();
+template std::string& JSON::jsonViewer::get<std::string>();
+template JSON::json_array& JSON::jsonViewer::get<JSON::json_array>();
+template JSON::json_object& JSON::jsonViewer::get<JSON::json_object>();
+
+JSON::jsonViewer JSON::jsonViewer::operator[](std::string key){
+    if (std::holds_alternative<JSON::json_object>(this->node->val)){
+        auto map = std::get<JSON::json_object>(this->node->val);
+        if(map.count(key)>0){
+            return JSON::jsonViewer(map[key]);
+        }
+        throw std::runtime_error("error: object does not contains key \""+key+"\".");
+    }
+    throw std::runtime_error("error: use of key on non-object type value.");
+}
+JSON::jsonViewer JSON::jsonViewer::operator[](uint32_t index){
+    if (std::holds_alternative<JSON::json_array>(this->node->val)){
+        auto vec = std::get<JSON::json_array>(this->node->val);
         if(index>=0&&index<vec.size()){
-            return *((std::get<std::vector<JSON*>>(this->val))[index]);
+            return JSON::jsonViewer(vec[index]);
         }
         throw std::runtime_error("error: use of out of bound index.");
     }
     throw std::runtime_error("error: use of index on non-array type value.");
 }
+
+
+// JSON::JSON(){
+//     this->val="";
+// }
+
+// JSON::JSON(std::ifstream& json_file){
+//     std::string json_string = "";
+//     char letter;
+//     if(json_file.is_open()){
+//         while(!json_file.get(letter).eof()){
+//             json_string +=letter;
+//         }
+//     }
+//     jsonParser parser = jsonParser(json_string);
+//     this->val = parser.parse();
+// }
+
+// JSON::JSON(std::string json_string){
+//     jsonParser parser = jsonParser(json_string);
+//     this->val = parser.parse();
+// }
+
+// JSON* JSON::create_JSON(json::object val){
+//     JSON* new_json = new JSON();
+//     new_json->val = val;
+//     return new_json;
+// }
+
+// JSON* JSON::create_JSON(json::array val){
+//     JSON* new_json = new JSON();
+//     new_json->val= val;
+//     return new_json;
+// }
+
+// JSON* JSON::create_JSON(std::string val){
+//     JSON* new_json = new JSON();
+//     new_json->val= val;
+//     return new_json;
+// }
+
+// JSON* JSON::create_JSON(double val){
+//     JSON* new_json = new JSON();
+//     new_json->val= val;
+//     return new_json;
+// }
+
+// JSON* JSON::create_JSON(float val){
+//     JSON* new_json = new JSON();
+//     new_json->val= val;
+//     return new_json;
+// }
+
+// JSON* JSON::create_JSON(long long val){
+//     JSON* new_json = new JSON();
+//     new_json->val= val;
+//     return new_json;
+// }
+
+// JSON* JSON::create_JSON(int val){
+//     JSON* new_json = new JSON();
+//     new_json->val= val;
+//     return new_json;
+// }
+
+// JSON::jsonParser::jsonParser(std::string json_string){
+//     this->json_string=json_string;
+//     this->tokenizer.add_json_string(json_string);
+// }
+
+// json::object JSON::jsonParser::parse(){
+//     look_ahead = this->tokenizer.get_next_token();
+//     return this->parseObject();
+// }
+
+// json::object JSON::jsonParser::parseObject(){
+//     this->eat(OPEN_BRACE);
+//     json::object fields;
+//     while(this->look_ahead.type!=CLOSE_BRACE){
+//         fields.insert(this->parseField());
+//         if(this->look_ahead.type!=CLOSE_BRACE){
+//             this->eat(COMMA);
+//         }
+//     }
+//     this->eat(CLOSE_BRACE);
+//     return fields;
+// }
+
+// std::pair<std::string,JSON*> JSON::jsonParser::parseField(){
+    
+//     token field_name = this->eat(STRING_LITERAL);
+//     this->eat(COLON);
+//     JSON* value = this->parseLiteral();
+//     return std::make_pair(std::get<std::string>(field_name.val),value);
+// }
+
+// JSON* JSON::jsonParser::parseLiteral(){
+//     JSON* new_node = nullptr;
+//     switch(this->look_ahead.type){
+//         case OPEN_BRACE:{
+//             return create_JSON(this->parseObject());
+//         }
+//         case OPEN_BRACKET:{
+//             json::array values;
+//             this->eat(OPEN_BRACKET);
+//             while (!this->tokenizer.reach_the_end() && this->look_ahead.type != CLOSE_BRACKET){
+//                 values.push_back(this->parseLiteral());
+//                 if (this->look_ahead.type == COMMA)
+//                 {
+//                     this->eat(COMMA);
+//                 }
+//             }
+//             this->eat(CLOSE_BRACKET);
+//             return create_JSON(values);
+//         }
+//         case FLOAT:
+//             new_node = create_JSON(std::get<float>(this->look_ahead.val));
+//             this->eat(FLOAT);
+//             return new_node;
+//         case DOUBLE:
+//             new_node = create_JSON(std::get<double>(this->look_ahead.val));
+//             this->eat(DOUBLE);
+//             return new_node;
+//         case INT:
+//             new_node = create_JSON(std::get<int>(this->look_ahead.val));
+//             this->eat(INT);
+//             return new_node;
+//         case LONG:
+//             new_node = create_JSON(std::get<long long>(this->look_ahead.val));
+//             this->eat(LONG);
+//             return new_node;
+//         default:
+//             new_node = create_JSON(std::get<std::string>(this->look_ahead.val));
+//             this->eat(STRING_LITERAL);
+//             return new_node;
+//     }
+// }
+
+// token JSON::jsonParser::eat(t_type type){
+//     token current = this->look_ahead;
+//     if (current.type != type){
+
+//         throw std::runtime_error("Unexpected Token of type " + this->look_ahead.get_type_str() + ". Expected: " + token::tokentype_to_string(type) + ".");
+//     }
+    
+//     this->look_ahead = this->tokenizer.get_next_token();
+//     return current;
+// }
+
+
+// JSON::~JSON(){
+//     if(std::holds_alternative<json::object>(this->val)){
+//         json::object child_map = std::get<json::object>(this->val);
+//         for (auto &it : child_map){
+//             delete it.second;
+//         }
+//     }
+//     else if(std::holds_alternative<json::array>(this->val)){
+//         json::array Array = std::get<json::array>(this->val);
+//         for (int i=0;i<Array.size();i++){
+//             delete Array[i];
+//         }
+//     }
+// }
+// std::string JSON::to_string_helper(JSON* curr){
+//     std::string out = "";
+//     if (std::holds_alternative<json::object>(curr->val)){
+//         json::object child_map = std::get<json::object>(curr->val);
+//         int counter = 0;
+//         out+="{";
+//         for (auto& it:child_map){
+//             out+=it.first+":"+to_string_helper(it.second);
+//             if(counter<child_map.size()-1){
+//                 out+=",";
+//             }
+//             counter++;
+//         }
+//         out+="}";
+//     }
+//     else if (std::holds_alternative<json::array>(curr->val)){
+//         json::array Array = std::get<json::array>(curr->val);
+//         out+="[";
+//         for (int i=0;i<Array.size();i++){
+//             out+=to_string_helper(Array[i]);
+//             if(i<Array.size()-1){
+//                 out+=",";
+//             }
+//         }
+//         out+="]";
+//     }
+//     else if (std::holds_alternative<float>(curr->val)){
+//         double number = std::get<float>(curr->val);
+//         out+=number;
+//     }
+//     else if (std::holds_alternative<double>(curr->val)){
+//         double number = std::get<double>(curr->val);
+//         out+=number;
+//     }
+//     else if (std::holds_alternative<int>(curr->val)){
+//         double number = std::get<int>(curr->val);
+//         out+=number;
+//     }
+//     else if (std::holds_alternative<long long>(curr->val)){
+//         double number = std::get<long long>(curr->val);
+//         out+=number;
+//     }
+//     else if (std::holds_alternative<std::string>(curr->val)){
+//         out+="\""+std::get<std::string>(curr->val)+"\"";
+//     }
+//     return out;
+// }
+
+// std::string JSON::to_string(){
+//     return to_string_helper(this);
+// }
+
+// std::string JSON::to_stringf(){
+//     std::string json_string = to_string_helper(this);
+//     std::string fstring = "";
+//     int level = 0;
+//     bool in_array = false;
+//     for(int i=0;i<json_string.length();i++){
+//         switch(json_string[i]){
+//             case '[':
+//                 in_array=true;
+//                 fstring+=json_string[i];
+//                 break;
+//             case ']':
+//                 in_array=false;
+//                 fstring+=json_string[i];
+//                 break;
+//             case '{':
+//                 if(!in_array){
+//                     fstring+=json_string[i];
+//                     fstring+='\n';
+//                     level++;
+//                     for(int j=0;j<level;j++){
+//                         fstring+="    ";
+//                     }
+//                 }
+//                 else{
+//                     fstring+=json_string[i];
+//                 }
+//                 break;
+//             case '}':
+                
+//                 if(!in_array){
+//                     fstring+='\n';
+//                     level--;
+//                     for(int j=0;j<level;j++){
+//                         fstring+="    ";
+//                     }
+//                 }
+//                 fstring+=json_string[i];
+                
+//                 break;
+//             case ',':
+//                 fstring+=json_string[i];
+//                 if(!in_array){
+//                     fstring+='\n';
+//                     for(int j=0;j<level;j++){
+//                         fstring+="    ";
+//                     }
+//                 }
+//                 break;
+//             default:
+
+//                 fstring+=json_string[i];
+//                 break;
+//         }
+//     }
+    
+//     return fstring;
+// }
+
+// JSON JSON::from_str(std::string json_string){
+//     jsonParser parser = jsonParser(json_string);
+//     JSON new_json = JSON();
+//     new_json.val = parser.parse();
+//     return new_json;
+// }
+
+// JSON JSON::open(std::filesystem::path json_file){
+//     std::string json_string = "";
+//     std::ifstream file(json_file);
+//     char letter;
+//     if(file.is_open()){
+//         while(!file.get(letter).eof()){
+//             json_string +=letter;
+//         }
+//     }
+    
+//     jsonParser parser = jsonParser(json_string);
+//     JSON new_json = JSON();
+//     new_json.val = parser.parse();
+//     return new_json;
+// }
+
+// template <typename T>
+// T& JSON::get(){
+//     if(std::holds_alternative<T>(this->val)){
+//         return std::get<T>(this->val);
+//     }
+//     const std::string type_map[7] = {
+//         "Object",
+//         "Array",
+//         "String",
+//         "Int",
+//         "Long Long",
+//         "Float",
+//         "Double"
+//     };
+//     throw std::runtime_error("Mismatched type: Field contain value of type "+type_map[this->val.index()]+" Not "+ typeid(T).name());
+// }
+// template int& JSON::get<int>();
+// template long long& JSON::get<long long>();
+// template float& JSON::get<float>();
+// template double& JSON::get<double>();
+// template std::string& JSON::get<std::string>();
+// template json::array& JSON::get<json::array>();
+// template json::object& JSON::get<json::object>();
+
+// JSON& JSON::operator[](std::string key){
+//     if (std::holds_alternative<json::object>(this->val)){
+//         auto map = std::get<json::object>(this->val);
+//         if(map.count(key)>0){
+//             return *((std::get<json::object>(this->val))[key]);
+//         }
+//         throw std::runtime_error("error: object does not contains key \""+key+"\".");
+//     }
+    
+//     throw std::runtime_error("error: use of key on non-object type value.");
+// }
+// JSON& JSON::operator[](uint32_t index){
+//     if (std::holds_alternative<json::array>(this->val)){
+//         auto vec = std::get<json::array>(this->val);
+//         if(index>=0&&index<vec.size()){
+//             return *((std::get<json::array>(this->val))[index]);
+//         }
+//         throw std::runtime_error("error: use of out of bound index.");
+//     }
+//     throw std::runtime_error("error: use of index on non-array type value.");
+// }
+
+// void JSON::obj_add_field(std::string field_name){
+//     if (std::holds_alternative<json::object>(this->val)){
+//         auto& map = std::get<json::object>(this->val);
+        
+//         if(map.count(field_name)>0){
+//             return *((std::get<json::object>(this->val))[key]);
+//         }
+//         map.insert();
+//         throw std::runtime_error("error: object does not contains key \""+key+"\".");
+//     }
+    
+//     throw std::runtime_error("error: use of key on non-object type value.");
+// }
+//             void obj_remove_field();
+//             void array_push_back();
+//             void array_pop_back();
