@@ -119,14 +119,8 @@ JSON* JSON::jsonParser::parseLiteral(){
 
 token JSON::jsonParser::eat(t_type type){
     token current = this->look_ahead;
-    // if(current.val_is<double>()){
-    //     std::cout << std::get<double>(current.val) << '\n';
-    // }
-    // else if(current.val_is<std::string>()){
-    //     std::cout << "\""<< std::get<std::string>(current.val)<< "\"" << '\n';
-    // }
     if (current.type != type){
-        //std::cout << "Unexpected Token of type " + this->look_ahead.get_type_str() + ". Expected: " + token::tokentype_to_string(type) + ".";
+
         throw std::runtime_error("Unexpected Token of type " + this->look_ahead.get_type_str() + ". Expected: " + token::tokentype_to_string(type) + ".");
     }
     
@@ -139,34 +133,18 @@ JSON::~JSON(){
     if(std::holds_alternative<std::unordered_map<std::string, JSON*>>(this->val)){
         std::unordered_map<std::string, JSON*> child_map = std::get<std::unordered_map<std::string, JSON*>>(this->val);
         for (auto &it : child_map){
-            std::cout << "Deleting Object " << it.first << '\n';
             delete it.second;
         }
     }
     else if(std::holds_alternative<std::vector<JSON*>>(this->val)){
         std::vector<JSON*> array = std::get<std::vector<JSON*>>(this->val);
         for (int i=0;i<array.size();i++){
-            std::cout << "Deleting Array"  << '\n';
             delete array[i];
         }
-    }
-    else if (std::holds_alternative<double>(this->val)){
-        double number = std::get<double>(this->val);
-        double int_part;
-        if(std::modf(number,&int_part)!=0){
-            std::cout << "Delete number: " << number << '\n';
-        }
-        else{
-            std::cout << "Delete number: " << std::to_string((int) int_part) << '\n';
-        }
-    }
-    else if (std::holds_alternative<std::string>(this->val)){
-        std::cout << "Delete string: " << std::get<std::string>(this->val) << '\n';
     }
 }
 std::string JSON::to_string_helper(JSON* curr){
     std::string out = "";
-
     if (std::holds_alternative<std::unordered_map<std::string, JSON*>>(curr->val)){
         std::unordered_map<std::string, JSON*> child_map = std::get<std::unordered_map<std::string, JSON*>>(curr->val);
         int counter = 0;
