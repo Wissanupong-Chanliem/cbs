@@ -196,15 +196,15 @@ std::string JSON::to_string_helper(tree_node* curr){
     }
     else if (std::holds_alternative<float>(curr->val)){
         float number = std::get<float>(curr->val);
-        out+=number;
+        out+=std::to_string(number);
     }
     else if (std::holds_alternative<double>(curr->val)){
         double number = std::get<double>(curr->val);
-        out+=number;
+        out+=std::to_string(number);
     }
     else if (std::holds_alternative<int>(curr->val)){
         int number = std::get<int>(curr->val);
-        out+=number;
+        out+=std::to_string(number);
     }
     else if (std::holds_alternative<long long>(curr->val)){
         long long number = std::get<long long>(curr->val);
