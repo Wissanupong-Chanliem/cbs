@@ -33,22 +33,22 @@ jsonViewer* JSON::jsonParser::parse(){
 }
 
 json_object JSON::jsonParser::parseObject(){
-    this->eat(OPEN_BRACE);
+    this->eat(json_tokenizer::OPEN_BRACE);
     json_object fields;
-    while(this->look_ahead.type!=CLOSE_BRACE){
+    while(this->look_ahead.type!=json_tokenizer::CLOSE_BRACE){
         fields.insert(this->parseField());
-        if(this->look_ahead.type!=CLOSE_BRACE){
-            this->eat(COMMA);
+        if(this->look_ahead.type!=json_tokenizer::CLOSE_BRACE){
+            this->eat(json_tokenizer::COMMA);
         }
     }
-    this->eat(CLOSE_BRACE);
+    this->eat(json_tokenizer::CLOSE_BRACE);
     return fields;
 }
 
 std::pair<std::string,jsonViewer*> JSON::jsonParser::parseField(){
     
-    token field_name = this->eat(STRING_LITERAL);
-    this->eat(COLON);
+    json_tokenizer::token field_name = this->eat(json_tokenizer::STRING_LITERAL);
+    this->eat(json_tokenizer::COLON);
     jsonViewer* value = this->parseLiteral();
     return std::make_pair(std::get<std::string>(field_name.val),value);
 }
@@ -56,50 +56,50 @@ std::pair<std::string,jsonViewer*> JSON::jsonParser::parseField(){
 jsonViewer* JSON::jsonParser::parseLiteral(){
     jsonViewer* new_node = nullptr;
     switch(this->look_ahead.type){
-        case OPEN_BRACE:{
+        case json_tokenizer::OPEN_BRACE:{
             return new jsonViewer(this->parseObject());
         }
-        case OPEN_BRACKET:{
+        case json_tokenizer::OPEN_BRACKET:{
             json_array values;
-            this->eat(OPEN_BRACKET);
-            while (!this->tokenizer.reach_the_end() && this->look_ahead.type != CLOSE_BRACKET){
+            this->eat(json_tokenizer::OPEN_BRACKET);
+            while (!this->tokenizer.reach_the_end() && this->look_ahead.type != json_tokenizer::CLOSE_BRACKET){
                 values.push_back(this->parseLiteral());
-                if (this->look_ahead.type == COMMA)
+                if (this->look_ahead.type == json_tokenizer::COMMA)
                 {
-                    this->eat(COMMA);
+                    this->eat(json_tokenizer::COMMA);
                 }
             }
-            this->eat(CLOSE_BRACKET);
+            this->eat(json_tokenizer::CLOSE_BRACKET);
             return new jsonViewer(values);
         }
-        case FLOAT:
+        case json_tokenizer::FLOAT:
             new_node = new jsonViewer(std::get<float>(this->look_ahead.val));
-            this->eat(FLOAT);
+            this->eat(json_tokenizer::FLOAT);
             return new_node;
-        case DOUBLE:
+        case json_tokenizer::DOUBLE:
             new_node = new jsonViewer(std::get<double>(this->look_ahead.val));
-            this->eat(DOUBLE);
+            this->eat(json_tokenizer::DOUBLE);
             return new_node;
-        case INT:
+        case json_tokenizer::INT:
             new_node = new jsonViewer(std::get<int>(this->look_ahead.val));
-            this->eat(INT);
+            this->eat(json_tokenizer::INT);
             return new_node;
-        case LONG:
+        case json_tokenizer::LONG:
             new_node = new jsonViewer(std::get<long long>(this->look_ahead.val));
-            this->eat(LONG);
+            this->eat(json_tokenizer::LONG);
             return new_node;
         default:
             new_node = new jsonViewer(std::get<std::string>(this->look_ahead.val));
-            this->eat(STRING_LITERAL);
+            this->eat(json_tokenizer::STRING_LITERAL);
             return new_node;
     }
 }
 
-token JSON::jsonParser::eat(t_type type){
-    token current = this->look_ahead;
+json_tokenizer::token JSON::jsonParser::eat(json_tokenizer::t_type type){
+    json_tokenizer::token current = this->look_ahead;
     if (current.type != type){
 
-        throw std::runtime_error("Unexpected Token of type " + this->look_ahead.get_type_str() + ". Expected: " + token::tokentype_to_string(type) + ".");
+        throw std::runtime_error("Unexpected Token of type " + this->look_ahead.get_type_str() + ". Expected: " + json_tokenizer::token::tokentype_to_string(type) + ".");
     }
     
     this->look_ahead = this->tokenizer.get_next_token();
@@ -407,21 +407,21 @@ jsonViewer& jsonViewer::operator[](uint32_t index){
 // }
 
 // json::object JSON::jsonParser::parseObject(){
-//     this->eat(OPEN_BRACE);
+//     this->eat(json_tokenizer::OPEN_BRACE);
 //     json::object fields;
-//     while(this->look_ahead.type!=CLOSE_BRACE){
+//     while(this->look_ahead.type!=json_tokenizer::CLOSE_BRACE){
 //         fields.insert(this->parseField());
-//         if(this->look_ahead.type!=CLOSE_BRACE){
-//             this->eat(COMMA);
+//         if(this->look_ahead.type!=json_tokenizer::CLOSE_BRACE){
+//             this->eat(json_tokenizer::COMMA);
 //         }
 //     }
-//     this->eat(CLOSE_BRACE);
+//     this->eat(json_tokenizer::CLOSE_BRACE);
 //     return fields;
 // }
 
 // std::pair<std::string,JSON*> JSON::jsonParser::parseField(){
     
-//     token field_name = this->eat(STRING_LITERAL);
+//     token field_name = this->eat(json_tokenizer::STRING_LITERAL);
 //     this->eat(COLON);
 //     JSON* value = this->parseLiteral();
 //     return std::make_pair(std::get<std::string>(field_name.val),value);
@@ -430,20 +430,20 @@ jsonViewer& jsonViewer::operator[](uint32_t index){
 // JSON* JSON::jsonParser::parseLiteral(){
 //     JSON* new_node = nullptr;
 //     switch(this->look_ahead.type){
-//         case OPEN_BRACE:{
+//         case json_tokenizer::OPEN_BRACE:{
 //             return create_JSON(this->parseObject());
 //         }
-//         case OPEN_BRACKET:{
+//         case json_tokenizer::OPEN_BRACKET:{
 //             json::array values;
-//             this->eat(OPEN_BRACKET);
-//             while (!this->tokenizer.reach_the_end() && this->look_ahead.type != CLOSE_BRACKET){
+//             this->eat(json_tokenizer::OPEN_BRACKET);
+//             while (!this->tokenizer.reach_the_end() && this->look_ahead.type != json_tokenizer::CLOSE_BRACKET){
 //                 values.push_back(this->parseLiteral());
-//                 if (this->look_ahead.type == COMMA)
+//                 if (this->look_ahead.type == json_tokenizer::COMMA)
 //                 {
-//                     this->eat(COMMA);
+//                     this->eat(json_tokenizer::COMMA);
 //                 }
 //             }
-//             this->eat(CLOSE_BRACKET);
+//             this->eat(json_tokenizer::CLOSE_BRACKET);
 //             return create_JSON(values);
 //         }
 //         case FLOAT:
@@ -464,7 +464,7 @@ jsonViewer& jsonViewer::operator[](uint32_t index){
 //             return new_node;
 //         default:
 //             new_node = create_JSON(std::get<std::string>(this->look_ahead.val));
-//             this->eat(STRING_LITERAL);
+//             this->eat(json_tokenizer::STRING_LITERAL);
 //             return new_node;
 //     }
 // }

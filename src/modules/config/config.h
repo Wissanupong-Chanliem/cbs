@@ -12,6 +12,7 @@
 namespace config{
     class SourceCode{
         public:
+            std::string name;
             std::filesystem::path path;
             std::vector<SourceCode*> dependencies;
             int optimization_level;

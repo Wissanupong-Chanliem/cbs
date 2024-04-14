@@ -1,5 +1,6 @@
 #include "./modules/setup/setup.h"
 #include "./modules/config/config.h"
+#include "./modules/build/build.h"
 #include <iostream>
 int main(int argc,char * argv[]){
     if(argc<=1){
@@ -19,8 +20,8 @@ int main(int argc,char * argv[]){
             initializer.init();
         }
         else if(first_argument=="build"){
-            config::BuildConfig config = config::BuildConfig("./config.json");
-            std::cout << config.src["main"].path << '\n';
+            builder::ProjectBuilder Builder = builder::ProjectBuilder();
+            Builder.build();
         }
     }
     return 0;

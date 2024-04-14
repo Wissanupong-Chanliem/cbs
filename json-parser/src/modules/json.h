@@ -17,9 +17,9 @@ namespace json{
     class JSON{
         private:
             class jsonParser{
-                Tokenizer tokenizer;
+                json_tokenizer::Tokenizer tokenizer;
                 std::string json_string;
-                token look_ahead;
+                json_tokenizer::token look_ahead;
 
                 public:
                     jsonParser(std::string json_string);
@@ -27,7 +27,7 @@ namespace json{
                     json_object parseObject();
                     std::pair<std::string, jsonViewer *> parseField();
                     jsonViewer *parseLiteral();
-                    token eat(t_type type);
+                    json_tokenizer::token eat(json_tokenizer::t_type type);
             };
             
             static std::string to_string_helper(jsonViewer* curr);

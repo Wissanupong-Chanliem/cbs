@@ -1,66 +1,66 @@
 #include "tokenizer.h"
+using namespace json_tokenizer;
 
-
-token::token(){
+json_tokenizer::token::token(){
     this->type=UNDEFINED;
     this->val="";
 }
 
-token::token(t_type token_type,std::string value){
+json_tokenizer::token::token(json_tokenizer::t_type token_type,std::string value){
     this->type=token_type;
     this->val=value;
 }
 
-token::token(t_type token_type,float value){
+json_tokenizer::token::token(json_tokenizer::t_type token_type,float value){
     this->type=token_type;
     this->val=value;
 }
 
-token::token(t_type token_type,double value){
+json_tokenizer::token::token(json_tokenizer::t_type token_type,double value){
     this->type=token_type;
     this->val=value;
 }
 
-token::token(t_type token_type,char value){
+json_tokenizer::token::token(json_tokenizer::t_type token_type,char value){
     this->type=token_type;
     this->val=std::string(1,value);
 }
 
-token::token(t_type token_type,int value){
+token::token(json_tokenizer::t_type token_type,int value){
     this->type=token_type;
     this->val=value;
 }
 
-token::token(t_type token_type,long long value){
+json_tokenizer::token::token(json_tokenizer::t_type token_type,long long value){
     this->type=token_type;
     this->val=value;
 }
 
-template<typename T> T token::get_val(){
+template<typename T> T json_tokenizer::token::get_val(){
     return std::get<T>(this->val);
 }
-template std::string token::get_val<std::string>();
-template double token::get_val<double>();
-template int token::get_val<int>();
-template float token::get_val<float>();
-template long long token::get_val<long long>();
+template std::string json_tokenizer::token::get_val<std::string>();
+template double json_tokenizer::token::get_val<double>();
+template int json_tokenizer::token::get_val<int>();
+template float json_tokenizer::token::get_val<float>();
+template long long json_tokenizer::token::get_val<long long>();
 
-template<typename A> bool token::val_is(){
+template<typename A> bool json_tokenizer::token::val_is(){
     return std::holds_alternative<A>(this->val);
 }
 
-template bool token::val_is<std::string>();
-template bool token::val_is<double>();
-template bool token::val_is<int>();
-template bool token::val_is<float>();
-template bool token::val_is<long long>();
+template bool json_tokenizer::token::val_is<std::string>();
+template bool json_tokenizer::token::val_is<double>();
+template bool json_tokenizer::token::val_is<int>();
+template bool json_tokenizer::token::val_is<float>();
+template bool json_tokenizer::token::val_is<long long>();
 
-std::string token::get_type_str(){
+std::string json_tokenizer::token::get_type_str(){
     return tokentype_to_string(this->type);
 }
 
-std::string token::tokentype_to_string(t_type type){
-    static std::unordered_map<t_type,std::string> TokenTypeString={
+std::string json_tokenizer::token::tokentype_to_string(json_tokenizer::t_type type){
+    static std::unordered_map<json_tokenizer::t_type,std::string> TokenTypeString={
         {OPEN_BRACE,"OPEN_BRACE"},
         {CLOSE_BRACE,"CLOSE_BRACE"},
         {OPEN_BRACKET,"OPEN_BRACKET"},
@@ -78,25 +78,25 @@ std::string token::tokentype_to_string(t_type type){
     return TokenTypeString[type];
 }
 
-Tokenizer::Tokenizer(){
+json_tokenizer::Tokenizer::Tokenizer(){
     this->cursor=0;
     this->content="";
 }
 
-Tokenizer::Tokenizer(std::string json_string){
+json_tokenizer::Tokenizer::Tokenizer(std::string json_string){
     this->cursor=0;
     this->content=json_string;
 }
 
-void Tokenizer::add_json_string(std::string json_string){
+void json_tokenizer::Tokenizer::add_json_string(std::string json_string){
     this->content=json_string;
 }
 
-bool Tokenizer::reach_the_end(){
+bool json_tokenizer::Tokenizer::reach_the_end(){
     return this->cursor>=this->content.length();
 }
 
-token Tokenizer::get_next_token(){
+json_tokenizer::token json_tokenizer::Tokenizer::get_next_token(){
     while(!this->reach_the_end()&&isspace(this->content[this->cursor])){
         this->cursor++;
     }
@@ -108,22 +108,22 @@ token Tokenizer::get_next_token(){
     switch(current_char){
         case '{':
             this->cursor++;
-            return token(OPEN_BRACE,current_char);
+            return json_tokenizer::token(OPEN_BRACE,current_char);
         case '}':
             this->cursor++;
-            return token(CLOSE_BRACE,current_char);
+            return json_tokenizer::token(CLOSE_BRACE,current_char);
         case '[':
             this->cursor++;
-            return token(OPEN_BRACKET,current_char);
+            return json_tokenizer::token(OPEN_BRACKET,current_char);
         case ']':
             this->cursor++;
-            return token(CLOSE_BRACKET,current_char);
+            return json_tokenizer::token(CLOSE_BRACKET,current_char);
         case ',':
             this->cursor++;
-            return token(COMMA,current_char);
+            return json_tokenizer::token(COMMA,current_char);
         case ':':
             this->cursor++;
-            return token(COLON,current_char);
+            return json_tokenizer::token(COLON,current_char);
         default:
             if(std::isdigit(current_char)||current_char=='-'){
                 std::string number = "";
@@ -152,26 +152,26 @@ token Tokenizer::get_next_token(){
                     }
                     if(number[0]=='-'){
                         if(number.compare(std::to_string(INT_MIN))<=0){
-                            return token(INT,stoi(number));
+                            return json_tokenizer::token(INT,stoi(number));
                         }
                         else{
-                            return token(LONG,stoll(number));
+                            return json_tokenizer::token(LONG,stoll(number));
                         }
                     }
                     else{
                         if(number.compare(std::to_string(INT_MAX))<=0){
-                            return token(INT,stoi(number));
+                            return json_tokenizer::token(INT,stoi(number));
                         }
                         else{
-                            return token(LONG,stoll(number));
+                            return json_tokenizer::token(LONG,stoll(number));
                         }
                     }
                 }
                 else{
                     if(decimal_count>7){
-                        return token(DOUBLE,stod(number));
+                        return json_tokenizer::token(DOUBLE,stod(number));
                     }
-                    return token(FLOAT,stof(number));
+                    return json_tokenizer::token(FLOAT,stof(number));
                 }
                 
             }
@@ -193,7 +193,7 @@ token Tokenizer::get_next_token(){
                     current_char = this->content[this->cursor];
                 }
                 this->cursor++;
-                return token(STRING_LITERAL,string_literal);
+                return json_tokenizer::token(STRING_LITERAL,string_literal);
             }
             else{
                 throw std::runtime_error("String contain unrecognized symbol. found:" + current_char);

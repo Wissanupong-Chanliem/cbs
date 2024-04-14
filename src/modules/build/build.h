@@ -1,13 +1,17 @@
 #ifndef BUILD_H
 #define BUILD_H
 #include "../config/config.h"
-
+#include <Windows.h>
+#include <unordered_map>
+#include <queue>
 namespace builder{
 
     class CodeCompiler{
-        std::vector<const config::SourceCode&> files;
+        std::vector<config::SourceCode*> files;
+        std::string outdir;
         public:
-            CodeCompiler(std::vector<const config::SourceCode&> files);
+            CodeCompiler();
+            CodeCompiler(std::vector<config::SourceCode*> files,std::string destination);
             std::vector<std::string> compile();
     };
 
@@ -17,8 +21,11 @@ namespace builder{
 
     class ProjectBuilder{
         config::BuildConfig config;
+        CodeCompiler compiler;
+        ObjectLinker linker;
         public:
             ProjectBuilder();
+            int build();
     };
     
 }
