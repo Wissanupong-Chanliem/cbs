@@ -1,20 +1,17 @@
 {
     "project_name":"cbs",
-    "outdir":{
-        "obj":"./build/obj",
-        "bin":"./build/bin"
-    },
+    "outdir":"./build",
     "src":{
-        "program":{
-            "main":"./src/main.cpp",
-            "dependencies":[""],
-            "optimization":0
-        },
-        "test":{
-            "main":"./test/test.cpp",
+        "main":{
+            "path":"./src/main.cpp",
             "dependencies":[],
             "optimization":0
-        },
-        "source_code":[]
+        }
+    },
+    "test":{
+        "tokenize":{
+            "path":"./src/test/tokenize.cpp",
+            "dependencies":["tokenizer"]
+        }
     }
 }

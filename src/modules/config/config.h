@@ -1,28 +1,32 @@
-#ifndef SETUP_H
-#define SETUP_H
+#ifndef CONFIG_H
+#define CONFIG_H
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <vector>
+#include <unordered_map>
 #include <stdexcept>
-using namespace std::filesystem;
+#include "../../libs/json/json.h"
 
-namespace setup{
-    class ProjectInitializer{
-        std::string project_name="";
-        void create_project_structure();
+
+namespace config{
+    class SourceCode{
         public:
-            ProjectInitializer();
-            bool init();
+            std::filesystem::path path;
+            std::vector<SourceCode*> dependencies;
+            int optimization_level;
+            SourceCode();
     };
-
-    class ProjectCreator{
-        std::string project_name="";
-        void create_project_structure();
+    class BuildConfig{
         public:
-            ProjectCreator(std::string name);
-            bool create();
+            std::string project_name;
+            std::filesystem::path out_dir;
+            std::unordered_map<std::string,SourceCode> src;
+            BuildConfig();
+            BuildConfig(std::filesystem::path config_path);
+            void populate_config(std::filesystem::path config_path);
     };
-
+    
 }
 
 #endif

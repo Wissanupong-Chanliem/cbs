@@ -1,57 +1,74 @@
 #ifndef JSON_H
 #define JSON_H
+
 #include <filesystem>
-#include <iostream>
 #include <stdexcept>
 #include <variant>
 #include <unordered_map>
-#include <stack>
-#include <queue>
-#include <math.h>
 #include "tokenizer/tokenizer.h"
+#include <vector>
 
 namespace json{
-    
-    class JSON {
-        
+    class jsonViewer;
+    class jsonViewer;
+    typedef std::unordered_map<std::string,jsonViewer*> json_object;
+    typedef std::vector<jsonViewer*> json_array;
+
+    class JSON{
         private:
-            
             class jsonParser{
                 Tokenizer tokenizer;
                 std::string json_string;
                 token look_ahead;
+
                 public:
                     jsonParser(std::string json_string);
-                    std::unordered_map<std::string,JSON*> parse();
-                    std::unordered_map<std::string,JSON*> parseObject();
-                    std::pair<std::string,JSON*> parseField();
-                    JSON* parseLiteral();
+                    jsonViewer *parse();
+                    json_object parseObject();
+                    std::pair<std::string, jsonViewer *> parseField();
+                    jsonViewer *parseLiteral();
                     token eat(t_type type);
             };
-            std::variant<std::unordered_map<std::string,JSON*>,std::vector<JSON*>,std::string,double> val;
-            static JSON* create_JSON(std::unordered_map<std::string,JSON*> val);
-            static JSON* create_JSON(std::string val);
-            static JSON* create_JSON(double val);
-            static JSON* create_JSON(std::vector<JSON*> val);
-            std::string to_string_helper(JSON* curr);
+            
+            static std::string to_string_helper(jsonViewer* curr);
+            jsonViewer* root;
+
         public:
+            
             JSON();
             JSON(std::ifstream& json_file);
             JSON(std::string json_string);
+            ~JSON();
             std::string to_string();
             std::string to_stringf();
             static JSON from_str(std::string json_string);
             static JSON open(std::filesystem::path json_file);
-            ~JSON();
-            template <typename T> T get();
-            //Use to access field in object using key
-            //Error when used on value that's not object (ex. number, string, array)
-            JSON& operator[](std::string key);
-            JSON& operator[](uint32_t index);
+            //Use to access field in object using key and array element using index
+            //Error when used on object that's not compatible with used index type
+            jsonViewer& operator[](std::string key);
     };
-    
 
+    class jsonViewer{
+        public:
+            std::variant<json_object, json_array, std::string, int, long long, float, double> val;
+            jsonViewer();
+            jsonViewer(json_object val);
+            jsonViewer(json_array val);
+            jsonViewer(std::string val);
+            jsonViewer(double val);
+            jsonViewer(float val);
+            jsonViewer(long long val);
+            jsonViewer(int val);
+            ~jsonViewer();
+            template <typename T>
+            T &get();
+            // Use to access field in object using key and array element using index
+            // Error when used on object that's not compatible with used index type
+            jsonViewer& operator[](std::string key);
+            jsonViewer& operator[](uint32_t index);
+    };
 }
+
 
 
 

@@ -7,17 +7,21 @@
 using namespace std::filesystem;
 
 namespace setup{
-    class ProjectInitializer{
-        std::string project_name="";
-        void create_project_structure();
+    class ProjectSetup{
+        protected:
+            std::string project_name = "";
+            void get_config_string();
+            void create_project_structure(std::string prefix);
+            void set_project_name(std::string p_name);
+    };
+
+    class ProjectInitializer : private ProjectSetup {
         public:
             ProjectInitializer();
             bool init();
     };
 
-    class ProjectCreator{
-        std::string project_name="";
-        void create_project_structure();
+    class ProjectCreator : private ProjectSetup{
         public:
             ProjectCreator(std::string name);
             bool create();

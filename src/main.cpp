@@ -1,8 +1,9 @@
-#include "./modules/setup/setup.h";
-#include <iostream>;
+#include "./modules/setup/setup.h"
+#include "./modules/config/config.h"
+#include <iostream>
 int main(int argc,char * argv[]){
-    if(argc==0){
-        
+    if(argc<=1){
+        std::cout << "no arguments";
     }
     else{
         std::string first_argument(argv[1]);
@@ -10,13 +11,16 @@ int main(int argc,char * argv[]){
             std::string name="";
             std::cout << "Enter project name:";
             std::cin >> name;
-            std::cout << '\n';
             setup::ProjectCreator creator= setup::ProjectCreator(name);
             creator.create();
         }
-        if(first_argument=="init"){
+        else if(first_argument=="init"){
             setup::ProjectInitializer initializer = setup::ProjectInitializer();
             initializer.init();
+        }
+        else if(first_argument=="build"){
+            config::BuildConfig config = config::BuildConfig("./config.json");
+            std::cout << config.src["main"].path << '\n';
         }
     }
     return 0;
