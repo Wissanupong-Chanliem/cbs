@@ -26,7 +26,6 @@ int main(int argc,char * argv[]){
         }
         else if(first_argument=="run"){
             std::string arguments = "";
-            int argn = 0;
             if(argc>=2){
                 if(strcmp(argv[2],"-a")==0){
                     for(int i=3;i<argc;i++){
@@ -40,6 +39,27 @@ int main(int argc,char * argv[]){
             }
             runner::ProjectBinRunner binrunner = runner::ProjectBinRunner();
             binrunner.run_program(arguments);
+        }
+        else if(first_argument=="test"){
+            if(argc<=2){
+                std::cout << "cbs test <test-name>";
+                return;
+            }
+            std::string test_name = argv[2];
+            std::string arguments = "";
+            if(argc>3){
+                if(strcmp(argv[3],"-a")==0){
+                    for(int i=4;i<argc;i++){
+                        if(i>4){
+                            arguments+=" ";
+                        }
+                        arguments+=std::string(argv[i]);
+                    }
+
+                }
+            }
+            runner::ProjectBinRunner binrunner = runner::ProjectBinRunner();
+            binrunner.run_test(test_name,arguments);
         }
     }
     return 0;

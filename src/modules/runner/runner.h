@@ -10,7 +10,7 @@ namespace runner{
         public:
             ProjectBinRunner();
             void run_program(std::string arguments);
-            void run_test(std::string test_name);
+            void run_test(std::string test_name,std::string arguments);
     };
     void run_binary(std::filesystem::path bin_path);
 }

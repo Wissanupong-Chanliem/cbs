@@ -37,7 +37,7 @@
     "test":{
         "tokenize":{
             "path":"./src/test/tokenize.cpp",
-            "dependencies":["tokenizer"]
+            "dependencies":[]
         }
     }
 }

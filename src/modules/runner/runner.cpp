@@ -11,9 +11,9 @@ void runner::ProjectBinRunner::run_program(std::string arguments){
     system(command.c_str());
 }
 
-void runner::ProjectBinRunner::run_test(std::string test_name){
+void runner::ProjectBinRunner::run_test(std::string test_name,std::string arguments){
     std::filesystem::path p = std::filesystem::absolute(this->build_dir+"/bin/tests/"+test_name);
-    std::string command = p.string();
+    std::string command = p.string() + " " + arguments;
     system(command.c_str());
 }
 
