@@ -25,7 +25,8 @@ void config::BuildConfig::populate_config(std::filesystem::path config_path){
             }
             curr.path = source_path;
             try{
-                curr.optimization_level=(*it.second)["optimization"].get<int>();
+                int op_l = (*it.second)["optimization"].get<int>();
+                curr.optimization_level=(op_l>3) ? 3 : ((op_l<0) ? 0 : op_l);
             }
             catch(...){
                 throw std::logic_error("Error reading optimization level of \""+it.first+"\". make sure it's integer from 0 to 3.");

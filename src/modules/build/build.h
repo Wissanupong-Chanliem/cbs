@@ -3,7 +3,11 @@
 #include "../config/config.h"
 #include <Windows.h>
 #include <unordered_map>
+#include <stdexcept>
 #include <queue>
+#include <numeric>
+#include <algorithm>
+#include <set>
 namespace builder{
 
     class CodeCompiler{
@@ -16,7 +20,12 @@ namespace builder{
     };
 
     class ObjectLinker{
-
+        std::vector<std::string> path_to_obj;
+        std::string outdir;
+        public:
+            ObjectLinker();
+            ObjectLinker(std::vector<std::string>& paths,std::string destination);
+            void start_linking();
     };
 
     class ProjectBuilder{
@@ -25,7 +34,7 @@ namespace builder{
         ObjectLinker linker;
         public:
             ProjectBuilder();
-            int build();
+            bool build();
     };
     
 }

@@ -70,6 +70,9 @@
         "ranges": "cpp",
         "regex": "cpp",
         "span": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "numeric": "cpp",
+        "set": "cpp",
+        "xtree": "cpp"
     }
 }

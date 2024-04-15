@@ -2,8 +2,34 @@
     "project_name":"cbs",
     "outdir":"./build",
     "src":{
+        
         "main":{
             "path":"./src/main.cpp",
+            "dependencies":["setup","build","runner"],
+            "optimization":0
+        },
+        "build":{
+            "path":"./src/modules/build/build.cpp",
+            "dependencies":["config"],
+            "optimization":0
+        },
+        "setup":{
+            "path":"./src/modules/setup/setup.cpp",
+            "dependencies":[],
+            "optimization":0
+        },
+        "config":{
+            "path":"./src/modules/config/config.cpp",
+            "dependencies":["libjson"],
+            "optimization":0
+        },
+        "runner":{
+            "path":"./src/modules/runner/runner.cpp",
+            "dependencies":["config"],
+            "optimization":0
+        },
+        "libjson":{
+            "path":"./src/libs/json/libjson.a",
             "dependencies":[],
             "optimization":0
         }
