@@ -27,12 +27,26 @@ void ProjectSetup::create_project_structure(std::string prefix){
     else{
         create_directory(prefix+"/src");
     }
+    create_directory(prefix+"/src/libs");
     create_directory(prefix+"/src/modules");
     create_directory(prefix+"/src/utils");
-    create_directory(prefix+"/src/test");
+    create_directory(prefix+"/src/tests");
     std::ofstream main(prefix+"/src/main.cpp");
+    std::string main_content = "#include <iostream>\n\n"
+        "\nint main(){"
+        "\n    std::cout << \"Hello, World\";"
+        "\n    return 0;"
+        "\n}";
+    main << main_content;
     main.close();
-
+    std::ofstream test(prefix+"/src/tests/example.cpp");
+    std::string test_content = "#include <iostream>\n\n"
+        "\nint main(){"
+        "\n    std::cout << \"Hello, this is example test\";"
+        "\n    return 0;"
+        "\n}";
+    test << test_content;
+    test.close();
     //config json file
     std::ofstream config(prefix+"/config.json");
     std::string config_content = "{"
@@ -49,6 +63,7 @@ void ProjectSetup::create_project_structure(std::string prefix){
         "\n        \"example\":{"
         "\n            \"path\":\"./src/test/example.cpp\","
         "\n            \"dependencies\":[],"
+        "\n            \"optimization\":0"
         "\n        }"
         "\n    }"
         "\n}";

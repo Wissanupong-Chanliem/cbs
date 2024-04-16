@@ -41,12 +41,12 @@
     },
     "test":{
         "tokenize":{
-            "path":"./src/test/tokenize.cpp",
+            "path":"./src/tests/tokenize.cpp",
             "dependencies":[],
             "optimization":0
         },
         "create":{
-            "path":"./src/test/setup.cpp",
+            "path":"./src/tests/setup.cpp",
             "dependencies":["setup"],
             "optimization":0
         }
