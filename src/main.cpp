@@ -2,6 +2,7 @@
 #include "./modules/build/build.h"
 #include "./modules/runner/runner.h"
 #include "./modules/config/config.h"
+#include "./modules/test/test.h"
 #include <iostream>
 int main(int argc,char * argv[]){
     if(argc<=1){
@@ -15,10 +16,12 @@ int main(int argc,char * argv[]){
             std::cin >> name;
             setup::ProjectCreator creator= setup::ProjectCreator(name);
             creator.create();
+            std::cout << "Successfully create new project\n";
         }
         else if(first_argument=="init"){
             setup::ProjectInitializer initializer = setup::ProjectInitializer();
             initializer.init();
+            std::cout << "Successfully initialize project\n";
         }
         else if(first_argument=="build"){
             builder::ProjectBuilder Builder = builder::ProjectBuilder();
@@ -42,10 +45,14 @@ int main(int argc,char * argv[]){
         }
         else if(first_argument=="test"){
             if(argc<=2){
-                std::cout << "cbs test <test-name>";
-                return;
+                std::cout << "Test Command : cbs test <test-name>";
+                return 0;
             }
             std::string test_name = argv[2];
+            std::cout << "building test \"" + test_name << "\"";
+            test::TestBuilder Builder = test::TestBuilder();
+            Builder.build(test_name);
+            std::cout << " | finished\n";
             std::string arguments = "";
             if(argc>3){
                 if(strcmp(argv[3],"-a")==0){
@@ -58,8 +65,9 @@ int main(int argc,char * argv[]){
 
                 }
             }
+            std::cout << "running test \"" + test_name << "\"\n";
             runner::ProjectBinRunner binrunner = runner::ProjectBinRunner();
-            binrunner.run_test(test_name,arguments);
+            binrunner.run_test(test_name, arguments);
         }
     }
     return 0;

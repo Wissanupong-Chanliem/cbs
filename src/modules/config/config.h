@@ -23,6 +23,7 @@ namespace config{
             std::string project_name;
             std::filesystem::path out_dir;
             std::unordered_map<std::string,SourceCode> src;
+            std::unordered_map<std::string,SourceCode> tests;
             BuildConfig();
             BuildConfig(std::filesystem::path config_path);
             void populate_config(std::filesystem::path config_path);

@@ -1,13 +1,12 @@
-#include "build.h"
+#include "test.h"
 
-builder::ProjectBuilder::ProjectBuilder(){
+test::TestBuilder::TestBuilder(){
     this->config.populate_config("./config.json");
 }
 
-bool builder::ProjectBuilder::build(){
-    
+bool test::TestBuilder::build(std::string test_name){
     std::vector<config::SourceCode*> used_files;
-    config::SourceCode* curr_file = &(this->config.src["main"]);
+    config::SourceCode* curr_file = &(this->config.tests[test_name]);
     std::queue<config::SourceCode*> file_queue;
     std::set<config::SourceCode*> added;
     file_queue.push(curr_file);
@@ -28,7 +27,7 @@ bool builder::ProjectBuilder::build(){
     try{
         std::vector<std::string> obj_files = this->compiler.compile();
         this->linker = ObjectLinker(obj_files,this->config.out_dir.string());
-        this->linker.start_linking();
+        this->linker.start_linking(test_name);
     }
     catch(...){
         return false;
@@ -36,17 +35,16 @@ bool builder::ProjectBuilder::build(){
     
     return true;
 }
-
-builder::CodeCompiler::CodeCompiler(){
+test::CodeCompiler::CodeCompiler(){
     this->outdir = "";
 }
 
-builder::CodeCompiler::CodeCompiler(std::vector<config::SourceCode*> files,std::string destination){
+test::CodeCompiler::CodeCompiler(std::vector<config::SourceCode*> files,std::string destination){
     this->files = files;
     this->outdir = destination;
 }
 
-std::vector<std::string> builder::CodeCompiler::compile(){
+std::vector<std::string> test::CodeCompiler::compile(){
     std::vector<std::string> obj_files;
     std::vector<std::string> compile_commands;
     if(!std::filesystem::exists(this->outdir)){
@@ -55,12 +53,15 @@ std::vector<std::string> builder::CodeCompiler::compile(){
     if(!std::filesystem::exists(this->outdir+"/obj")){
         std::filesystem::create_directories(this->outdir+"/obj");
     }
+    if(!std::filesystem::exists(this->outdir+"/obj/tests")){
+        std::filesystem::create_directories(this->outdir+"/obj/tests");
+    }
     for(auto& it:this->files){
         if(it->name.rfind("lib",0)==0){
             obj_files.push_back(it->path.string());
             continue;
         }
-        std::string dest_file = this->outdir+"/obj/"+it->name+".o";
+        std::string dest_file = this->outdir+"/obj/tests/"+it->name+".o";
         std::string command = "g++ -c -O"+std::to_string(it->optimization_level)+" "+it->path.string()+" -o "+dest_file;
         compile_commands.push_back(command);
         obj_files.push_back(dest_file);
@@ -81,23 +82,26 @@ std::vector<std::string> builder::CodeCompiler::compile(){
     return obj_files;
 }
 
-builder::ObjectLinker::ObjectLinker(){
+test::ObjectLinker::ObjectLinker(){
     this->outdir = "";
 }
 
-builder::ObjectLinker::ObjectLinker(std::vector<std::string>& paths,std::string destination){
+test::ObjectLinker::ObjectLinker(std::vector<std::string>& paths,std::string destination){
     this->path_to_obj = paths;
     this->outdir = destination;
 }
 
-void builder::ObjectLinker::start_linking(){
+void test::ObjectLinker::start_linking(std::string test_name){
     if(!std::filesystem::exists(this->outdir)){
         std::filesystem::create_directories(this->outdir);
     }
     if(!std::filesystem::exists(this->outdir+"/bin")){
         std::filesystem::create_directories(this->outdir+"/bin");
     }
-    std::string command = "g++ -o "+this->outdir+"/bin/out";
+    if(!std::filesystem::exists(this->outdir+"/bin/tests")){
+        std::filesystem::create_directories(this->outdir+"/bin/tests");
+    }
+    std::string command = "g++ -o "+this->outdir+"/bin/tests/"+test_name;
     for(auto& it:this->path_to_obj){
         command += " " + it;
     }

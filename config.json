@@ -5,7 +5,7 @@
         
         "main":{
             "path":"./src/main.cpp",
-            "dependencies":["setup","build","runner"],
+            "dependencies":["setup","build","runner","test"],
             "optimization":0
         },
         "build":{
@@ -28,6 +28,11 @@
             "dependencies":["config"],
             "optimization":0
         },
+        "test":{
+            "path":"./src/modules/test/test.cpp",
+            "dependencies":["config"],
+            "optimization":0
+        },
         "libjson":{
             "path":"./src/libs/json/libjson.a",
             "dependencies":[],
@@ -37,7 +42,13 @@
     "test":{
         "tokenize":{
             "path":"./src/test/tokenize.cpp",
-            "dependencies":[]
+            "dependencies":[],
+            "optimization":0
+        },
+        "create":{
+            "path":"./src/test/setup.cpp",
+            "dependencies":["setup"],
+            "optimization":0
         }
     }
 }
