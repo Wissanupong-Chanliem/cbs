@@ -16,12 +16,12 @@ int main(int argc,char * argv[]){
             std::cin >> name;
             setup::ProjectCreator creator= setup::ProjectCreator(name);
             creator.create();
-            std::cout << "Successfully create new project\n";
+            std::cout << "Successfully create new project";
         }
         else if(first_argument=="init"){
             setup::ProjectInitializer initializer = setup::ProjectInitializer();
             initializer.init();
-            std::cout << "Successfully initialize project\n";
+            std::cout << "Successfully initialize project";
         }
         else if(first_argument=="build"){
             builder::ProjectBuilder Builder = builder::ProjectBuilder();
@@ -29,7 +29,7 @@ int main(int argc,char * argv[]){
         }
         else if(first_argument=="run"){
             std::string arguments = "";
-            if(argc>=2){
+            if(argc>2){
                 if(strcmp(argv[2],"-a")==0){
                     for(int i=3;i<argc;i++){
                         if(i>3){
