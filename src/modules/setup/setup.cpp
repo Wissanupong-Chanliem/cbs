@@ -61,7 +61,7 @@ void ProjectSetup::create_project_structure(std::string prefix){
         "\n    },"
         "\n    \"test\":{"
         "\n        \"example\":{"
-        "\n            \"path\":\"./src/test/example.cpp\","
+        "\n            \"path\":\"./src/tests/example.cpp\","
         "\n            \"dependencies\":[],"
         "\n            \"optimization\":0"
         "\n        }"
